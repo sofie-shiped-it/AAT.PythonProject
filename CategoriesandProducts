@@ -1,0 +1,153 @@
+import tkinter as tk
+from BaseList import BaseList
+from Utilities import clear_frame, show
+
+
+class CategoryList(BaseList):   # sub-class of BaseList
+
+    def __init__(self, lst):
+        super().__init__(lst)
+        self.categories_frame = None
+        self.frame2 = None
+        self.canvas_container = None
+        self.lst = ["games", "books", "plush", "art", "puzzles"]  # categories for sub-feature ii
+        self.myscrollbar = None
+        self.admin_page = tk.Frame
+        self.window = None
+
+    def open(self, admin_page, window):
+        self.categories_frame = tk.Frame(self.window, bg='dark blue')    # setting background to dark blue
+        self.categories_frame.place(relwidth=1, relheight=1)  # setting height and width dimensions
+        clear_frame(self.categories_frame)  # start by clearing frame, for most updated categories
+        self.admin_page = admin_page
+        self.window = window
+
+        self.frame2, self.categories_frame, self.canvas_container, self.myscrollbar = self.create_scrollable_frame(
+            self.categories_frame)
+
+        row = 0  # rows of category edit and delete button start at 0
+
+        edit_buttons = []  # empty list, increases as rows increase
+
+        for category_index in range(len(self.lst)):  # range based for loop, so number of indexes are dynamic
+            category = self.lst[category_index]
+
+            lbl_categories = tk.Label(self.frame2, text=category)
+            lbl_categories.grid(row=row, column=0)  # number of labels = number of categories
+
+            edit_btn = tk.Button(self.frame2,   # edit button for each row of categories
+                                 text="Edit ", font=self.txt1,
+                                 fg='black', bg='white',
+                                 command=lambda sym=str(category): self.edit_item(self.categories_frame, sym))
+            edit_buttons.append(edit_btn)
+            edit_btn.grid(row=row, column=1, padx=5, pady=5)
+
+            delete_btn = tk.Button(self.frame2,     # delete button for each row of categories
+                                   text="Delete", font=self.txt1,
+                                   fg='black', bg='white',
+                                   command=lambda sym=str(category): self.delete_btn(self.lst[category_index],
+                                                                                     self.categories_frame))
+            delete_btn.grid(row=row, column=2, padx=5, pady=5)
+
+            row = row + 1  # each label and buttons are placed on the same row
+
+        add_btn = tk.Button(self.categories_frame,  # add button is below scrollable container
+                            text="Add", font=self.txt1,
+                            fg='black', bg='white',     # adds to categories
+                            command=lambda: self.add_record(self.categories_frame))
+        self.canvas_container.pack(fill=tk.BOTH, expand=1)
+        add_btn.pack()
+
+        back_btn = tk.Button(self.categories_frame,  # when clicked go back to Admin Frame
+                             text="Back to Last Frame", font=self.txt2,
+                             fg='black', bg='white',
+                             command=lambda: show(self.admin_page()))
+        back_btn.pack(pady=30)
+
+        self.categories_frame.update()  # update frame and GUI
+
+
+class Products:
+    def __init__(self, name, price, quantity):  # encapsulation, product and quantity are private
+        self.name = name
+        self.price = price
+        self.quantity = quantity
+
+    def __eq__(self, other):    # to make sure
+        return other == self.name
+
+
+class ProductList(BaseList):     # sub-class of BaseList
+    def __init__(self, lst):
+        super().__init__(lst)
+        self.products_frame = None
+        self.frame2 = None
+        self.canvas_container = None
+        self.lst = [  # products and details for sub-feature iii
+            Products("Uno Game", "£5", 50), Products("Twister Game", "£14", 15),
+            Products("I am Malala Book", "£20", 15),
+            Products("Charlotte\'s Web Book", "£7", 18), Products("Harry Potter Book", "£6", 25)]
+
+        self.low_in_products = []  # low in products gets filled by low_stock function
+        self.myscrollbar = None
+        self.admin_page = tk.Frame
+        self.window = None
+
+    @staticmethod
+    def transformValue(newValue, oldValue):    # for editing product, old product is replaced
+        oldValue.name = newValue
+        return oldValue
+
+    def open(self, admin_page, window):  # from admin frame, product button is pressed, which opens product frame
+        self.products_frame = tk.Frame(self.window, bg='darkblue')
+        self.products_frame.place(relwidth=1, relheight=1)   # fills window with consistent blue background
+        clear_frame(self.products_frame)    # first clear frame for updated GUI
+        self.admin_page = admin_page
+        self.window = window
+
+        self.frame2, self.products_frame, self.canvas_container, self.myscrollbar = self.create_scrollable_frame(
+            self.products_frame)
+
+        row = 0  # rows start at 0
+
+        edit_buttons = []  # empty list, increases as rows increase
+
+        for product_index in range(len(self.lst)):  # range based for loop, so number of indexes are dynamic
+            product = self.lst[product_index]
+
+            lbl_products = tk.Label(self.frame2, text=product.name)
+            lbl_products.grid(row=row, column=0)  # for each category label an edit, delete and submit button are too
+
+            edit_btn = tk.Button(self.frame2,   # in line with label and delete button
+                                 text="Edit ", font=self.txt1,
+                                 fg='black', bg='white',
+                                 command=lambda sym=str(product.name): self.edit_item(self.products_frame, sym))
+
+            edit_buttons.append(edit_btn)
+            edit_btn.grid(row=row, column=1, padx=5, pady=5)
+
+            delete_btn = tk.Button(self.frame2,     # in line with label and edit button
+                                   text="Delete", font=self.txt1,
+                                   fg='black', bg='white',
+                                   command=lambda sym=str(product.name): self.delete_btn(self.lst[product_index],
+                                                                                         self.products_frame))
+            delete_btn.grid(row=row, column=2, padx=5, pady=5)
+
+            row = row + 1  # each label and buttons are placed on the same row
+
+        add_btn = tk.Button(self.products_frame,
+                            text="Add", font=self.txt1,
+                            fg='black', bg='white',
+                            command=lambda: self.add_record(self.products_frame))
+
+        self.canvas_container.pack(fill=tk.BOTH, expand=1)
+        add_btn.pack()
+
+        back_btn = tk.Button(self.products_frame,  # when clicked go back to Admin Frame
+                             text="Back to Last Frame", font=self.txt2,
+                             fg='black', bg='white',
+                             command=lambda: show(self.admin_page()))  # when clicked go to Admin Frame
+
+        back_btn.pack(pady=30)
+
+        self.products_frame.update()    # update GUI
