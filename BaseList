@@ -1,0 +1,151 @@
+from AAT_classes import Font
+from CategoriesandProducts import *
+
+
+def clear_frame(frame):  # clears frame by destroying widgets
+    for widget in frame.winfo_children():
+        widget.destroy()
+
+
+class BaseList:
+    def __init__(self, lst):
+        self.lst = lst  # list of product or category names as strings
+        self.txt1 = Font(family='Verdana', size='15', weight='normal', underline=False)
+        self.txt2 = Font('Arial', '15', 'normal', False)
+
+    @staticmethod
+    def cancel_destroy(items_destroy):  # destroy frames in order to switch frames
+        for item in items_destroy:
+            item.destroy()  # specific screen to destroy
+
+    def edit_item(self, page_frame, item):  # label, submit and cancel button appear
+        entry_field = tk.Entry(page_frame, font=self.txt1, width=50)
+        entry_field.pack()
+
+        submit_btn = tk.Button(page_frame,  # submit button adds item to list and GUI
+                               text="Submit", font=self.txt1,
+                               fg='black', bg='white',
+                               command=lambda: self.submit_edit_button([cancel_btn, submit_btn, entry_field],
+                                                                        page_frame, item))
+        submit_btn.pack()
+
+        cancel_btn = tk.Button(page_frame,  # cancel button takes away entry field and submit and cancel button
+                               text="Cancel", font=self.txt1,
+                               fg='black', bg='white',
+                               command=lambda: self.cancel_destroy([cancel_btn, submit_btn, entry_field]))
+        cancel_btn.pack()
+
+    @staticmethod
+    def transformValue(newValue, oldValue):
+        return newValue
+
+    def open(self, openAdminPage, window):
+        self.categories_frame = tk.Frame(self.window, bg='dark blue')    # setting background to dark blue
+        self.categories_frame.place(width=600, height=600)  # setting height and width dimensions
+        clear_frame(self.categories_frame)  # start by clearing frame, for most updated categories
+        self.openAdminPage = openAdminPage
+        self.window = window
+
+        self.frame2, self.categories_frame, self.canvas_container, self.myscrollbar = self.create_scrollable_frame(
+            self.categories_frame)
+
+        row = 0  # rows of cateory edit and delete button start at 0
+
+        edit_buttons = []  # empty list, increases as rows increase
+
+        for category_index in range(len(self.lst)):  # range based for loop, so number of indexes are dynamic
+            category = self.lst[category_index]
+
+            lbl_categories = tk.Label(self.frame2, text=category)
+            lbl_categories.grid(row=row, column=0)  # number of labels = number of categories
+
+            edit_btn = tk.Button(self.frame2,   # edit button for each row of categories
+                                 text="Edit ", font=self.txt1,
+                                 fg='black', bg='white',
+                                 command=lambda sym=str(category): self.edit_item(self.categories_frame, sym))
+            edit_buttons.append(edit_btn)
+            edit_btn.grid(row=row, column=1, padx=5, pady=5)
+
+            delete_btn = tk.Button(self.frame2,     # delete button for each row of categories
+                                   text="Delete", font=self.txt1,
+                                   fg='black', bg='white',
+                                   command=lambda sym=str(category): self.delete_btn(self.lst[category_index],
+                                                                                     self.categories_frame))
+            delete_btn.grid(row=row, column=2, padx=5, pady=5)
+
+            row = row + 1  # each label and buttons are placed on the same row
+
+        add_btn = tk.Button(self.categories_frame,  # add button is below scrollable container
+                            text="Add", font=self.txt1,
+                            fg='black', bg='white',     # adds to categories
+                            command=lambda: self.add_record(self.categories_frame))
+        self.canvas_container.pack(fill=tk.BOTH, expand=1)
+        add_btn.pack()
+
+        back_btn = tk.Button(self.categories_frame,  # when clicked go back to Admin Frame
+                             text="Back to Last Frame", font=self.txt2,
+                             fg='black', bg='white',
+                             command=lambda: self.openAdminPage())
+        back_btn.pack(pady=30)
+
+        self.categories_frame.update()  # update frame and GUI
+
+    def submit_edit_button(self, items_destroy, page_frame, old_itemvalue):
+        updatedValue = items_destroy[2].get()
+        found = self.lst.index(old_itemvalue)
+        self.lst[found] = self.transformValue(self.lst[found], updatedValue)
+
+        self.cancel_destroy(items_destroy)  # removing buttons, entry field from screen
+        self.open(page_frame, self.openAdminPage)
+
+    def submit_addbutton(self, items_destroy, page_frame):
+        entered_item = items_destroy[2].get()
+        self.lst.append(entered_item)  # adding to end of categories list
+        self.open(page_frame, self.window)
+
+    def delete_btn(self, category_name, categories_frame):
+        found = self.lst.index(category_name)
+
+        # print(found, category_name)
+        # print(self.lst)
+        del self.lst[found]
+        # print(self.lst)
+
+        self.open(categories_frame, self.window)
+
+    def add_record(self, page_frame):
+        entry_field = tk.Entry(page_frame, font=self.txt1, width=50)
+        entry_field.pack()
+
+        submit_btn = tk.Button(page_frame,
+                               text="Submit", font=self.txt1,
+                               fg='black', bg='white',
+                               command=lambda: self.submit_addbutton([cancel_btn, submit_btn, entry_field],
+                                                                     page_frame))
+        submit_btn.pack()
+
+        cancel_btn = tk.Button(page_frame,
+                               text="Cancel", font=self.txt1,
+                               fg='black', bg='white',
+                               command=lambda: self.cancel_destroy([cancel_btn, submit_btn, entry_field]))
+        cancel_btn.pack()
+
+    @staticmethod
+    def create_scrollable_frame(page_frame):
+        clear_frame(page_frame)
+
+        frame_container = tk.Frame(page_frame, height=400, width=400)  # frame container inside categories frame
+        frame_container.pack()
+        canvas_container = tk.Canvas(frame_container)  # enables scrolling, inside frame_container
+
+        my_scrollbar = tk.Scrollbar(frame_container, orient="vertical",
+                                    command=canvas_container.yview)  # moves view up and down with the scrollbar
+        my_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        frame2 = tk.Frame(canvas_container)  # needed additional frame to add features on canvas container
+
+        canvas_container.create_window((0, 0), window=frame2, anchor='nw')
+        canvas_container.configure(scrollregion=canvas_container.bbox("all"))  # allows entire box to be scrollable
+        canvas_container.configure(yscrollcommand=my_scrollbar.set)  # when scrolling, the scrollbar updates location
+        canvas_container.bind('<Configure>', lambda e: canvas_container.configure(
+            scrollregion=canvas_container.bbox('all')))
+        return frame2, page_frame, canvas_container, my_scrollbar
