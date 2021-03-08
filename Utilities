@@ -1,0 +1,32 @@
+
+class Window:
+    def __init__(self, root, title, background, width, height):
+        self.root = root
+        self.root.title(title)  # sets title of window
+        self.root.configure(bg=background)  # sets background color
+        self.root.width, self.root.height = width, height  # give measures of the window
+        self.root.winfo_screenwidth()   # gets screen width info
+        self.root.winfo_screenheight()  # gets screen height info
+
+    def center_window(self):
+        """
+        This centres the window when it is not maximised.  It
+        uses the screen and window height and width variables
+        defined in the program below.
+        """
+        x_cord = int((self.root.winfo_screenwidth() / 2) - (self.root.width / 2))
+        y_cord = int((self.root.winfo_screenheight() / 2) - (self.root.height / 2))
+        self.root.geometry("{}x{}+{}+{}".format(self.root.width, self.root.height, x_cord, y_cord))
+
+
+def show(frame):
+    """
+    This function swaps from one frame to another.
+    :return: Nothing
+    """
+    frame.tkraise()
+
+
+def clear_frame(frame):  # clears frame by destroying widgets
+    for widget in frame.winfo_children():
+        widget.destroy()
